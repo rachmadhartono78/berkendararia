@@ -1,117 +1,188 @@
-// Custom Scripts for Primal Template //
+// ============================================
+// BERKENDARA RIA - Custom JavaScript
+// ============================================
 
-jQuery(function($) {
-    "use strict";
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
+  // --- Navbar Scroll Effect ---
+  const navbar = document.getElementById('navbar');
+  const backToTop = document.getElementById('backToTop');
 
-        // get the value of the bottom of the #main element by adding the offset of that element plus its height, set it as a variable
-        var mainbottom = $('#main').offset().top;
+  window.addEventListener('scroll', function () {
+    const scrollY = window.scrollY;
 
-        // on scroll,
-        $(window).on('scroll',function(){
+    // Navbar shrink
+    if (scrollY > 80) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
 
-        // we round here to reduce a little workload
-        stop = Math.round($(window).scrollTop());
-        if (stop > mainbottom) {
-            $('.navbar').addClass('past-main');
-            $('.navbar').addClass('effect-main')
-        } else {
-            $('.navbar').removeClass('past-main');
-       }
-
-      });
-
-
-  // Collapse navbar on click
-
-   $(document).on('click.nav','.navbar-collapse.in',function(e) {
-    if( $(e.target).is('a') ) {
-    $(this).removeClass('in').addClass('collapse');
-   }
+    // Back to top visibility
+    if (scrollY > 600) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
   });
 
+  // --- Back to Top ---
+  backToTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
+  // --- Mobile Hamburger Menu ---
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
 
-    /*-----------------------------------
-    ----------- Scroll To Top -----------
-    ------------------------------------*/
+  hamburger.addEventListener('click', function () {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('open');
+  });
 
-    $(window).scroll(function () {
-      if ($(this).scrollTop() > 1000) {
-          $('#back-top').fadeIn();
-      } else {
-          $('#back-top').fadeOut();
+  // Close menu on link click
+  navLinks.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  // --- Scroll Reveal (Intersection Observer) ---
+  const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+
+  const revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
       }
     });
-    // scroll body to 0px on click
-    $('#back-top').on('click', function () {
-      $('#back-top').tooltip('hide');
-      $('body,html').animate({
-          scrollTop: 0
-      }, 1500);
-      return false;
-    });
-
-
-
-
-
-  /*-------- Owl Carousel ---------- */
-    $(".reviews").owlCarousel({
-
-    slideSpeed : 200,
-    items: 1,
-    singleItem: true,
-    autoPlay : true,
-    pagination : false
-    });
-
-
-  /* ------ Clients Section Owl Carousel ----- */
-
-    $(".clients").owlCarousel({
-    slideSpeed : 200,
-    items: 5,
-    singleItem: false,
-    autoPlay : true,
-    pagination : false
-    });
-
-
-  /* ------ jQuery for Easing min -- */
-
-    $(function() {
-    $('a.page-scroll').bind('click', function(event) {
-        var $anchor = $(this);
-        $('html, body').stop().animate({
-            scrollTop: $($anchor.attr('href')).offset().top
-        }, 1500, 'easeInOutExpo');
-        event.preventDefault();
-    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
   });
 
+  revealElements.forEach(function (el) {
+    revealObserver.observe(el);
+  });
 
+  // --- Toast Notification ---
+  function showToast(message, type) {
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + (type || 'success');
+    toast.textContent = message;
+    container.appendChild(toast);
 
-/* --------- Wow Init ------ */
+    setTimeout(function () {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100px)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(function () {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 4000);
+  }
 
-  new WOW().init();
+  // --- Subscribe Form AJAX ---
+  var form = document.getElementById('subscribeForm');
+  var btnSubmit = document.getElementById('btnSubmit');
 
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-  /* ----- Counter Up ----- */
+      var nama = document.getElementById('inputNama').value.trim();
+      var email = document.getElementById('inputEmail').value.trim();
+      var noHp = document.getElementById('inputHp').value.trim();
 
-$('.counter').counterUp({
-		delay: 10,
-		time: 1000
-});
+      // Basic validation
+      if (!nama) {
+        showToast('Nama tidak boleh kosong!', 'error');
+        return;
+      }
+      if (!email || !isValidEmail(email)) {
+        showToast('Masukkan email yang valid!', 'error');
+        return;
+      }
+      if (!noHp) {
+        showToast('No. WhatsApp tidak boleh kosong!', 'error');
+        return;
+      }
 
+      // Disable button
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = '⏳ Mengirim...';
 
-/*----- Preloader ----- */
+      // Send AJAX
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'php/subscribe.php', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-    $(window).load(function() {
-  		setTimeout(function() {
-        $('#loading').fadeOut('slow', function() {
-        });
-      }, 3000);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = '🏍️ Daftar Sekarang';
+
+          if (xhr.status === 200) {
+            try {
+              var response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                showToast(response.message, 'success');
+                form.reset();
+              } else {
+                showToast(response.message, 'error');
+              }
+            } catch (err) {
+              showToast('Terjadi kesalahan. Coba lagi nanti.', 'error');
+            }
+          } else {
+            showToast('Server error. Pastikan XAMPP aktif.', 'error');
+          }
+        }
+      };
+
+      xhr.onerror = function () {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '🏍️ Daftar Sekarang';
+        showToast('Gagal terhubung ke server. Pastikan XAMPP aktif.', 'error');
+      };
+
+      var data = 'nama=' + encodeURIComponent(nama) +
+        '&email=' + encodeURIComponent(email) +
+        '&no_hp=' + encodeURIComponent(noHp);
+      xhr.send(data);
     });
+  }
 
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // --- Active nav link highlight on scroll ---
+  var sections = document.querySelectorAll('section[id]');
+
+  window.addEventListener('scroll', function () {
+    var scrollPos = window.scrollY + 120;
+
+    sections.forEach(function (section) {
+      var top = section.offsetTop;
+      var height = section.offsetHeight;
+      var id = section.getAttribute('id');
+
+      if (scrollPos >= top && scrollPos < top + height) {
+        navLinks.querySelectorAll('a').forEach(function (a) {
+          a.style.color = '';
+        });
+        var activeLink = navLinks.querySelector('a[href="#' + id + '"]');
+        if (activeLink) {
+          activeLink.style.color = 'var(--primary-light)';
+        }
+      }
+    });
+  });
 });
