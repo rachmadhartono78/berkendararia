@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Jangan index folder PHP backend
+Disallow: /php/
+
+# Sitemap
+Sitemap: https://berkendararia.web.id/sitemap.xml

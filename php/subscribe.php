@@ -69,7 +69,7 @@ try {
 	$pdo = getDBConnection();
 
 	if ($pdo === null) {
-		throw new Exception('Gagal terhubung ke database. Pastikan XAMPP (MySQL) sudah aktif.');
+		throw new Exception('Gagal terhubung ke database. Pastikan MySQL aktif dan konfigurasi db_config.php benar.');
 	}
 
 	// Check if email already exists
@@ -108,7 +108,7 @@ catch (PDOException $e) {
 	http_response_code(500);
 	echo json_encode([
 		'success' => false,
-		'message' => 'Terjadi kesalahan database. Pastikan MySQL sudah aktif di XAMPP.'
+		'message' => 'Terjadi kesalahan database: ' . $e->getMessage()
 	]);
 
 }

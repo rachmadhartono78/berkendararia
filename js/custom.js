@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
               showToast('Terjadi kesalahan. Coba lagi nanti.', 'error');
             }
           } else {
-            showToast('Server error. Pastikan XAMPP aktif.', 'error');
+            showToast('Server error (' + xhr.status + '). Pastikan server & MySQL aktif.', 'error');
           }
         }
       };
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
       xhr.onerror = function () {
         btnSubmit.disabled = false;
         btnSubmit.textContent = '🏍️ Daftar Sekarang';
-        showToast('Gagal terhubung ke server. Pastikan XAMPP aktif.', 'error');
+        showToast('Gagal terhubung ke server. Cek koneksi dan pastikan server aktif.', 'error');
       };
 
       var data = 'nama=' + encodeURIComponent(nama) +

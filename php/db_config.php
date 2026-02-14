@@ -3,21 +3,27 @@
  * Berkendara Ria - Database Configuration
  * 
  * Konfigurasi koneksi MySQL via PDO
- * Default: XAMPP (localhost, root, tanpa password)
+ * 
+ * =============================================
+ *  PENTING: Sesuaikan pengaturan di bawah ini
+ *  dengan server kamu (XAMPP / VPS / Hosting)
+ * =============================================
  */
 
 // --- Database Settings ---
+// Untuk XAMPP lokal : host=localhost, user=root, pass=''
+// Untuk VPS        : sesuaikan dengan MySQL di VPS kamu
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'berkendararia');
 define('DB_USER', 'root');
-define('DB_PASS', ''); // XAMPP default: kosong
+define('DB_PASS', ''); // Isi password MySQL VPS kamu di sini jika ada
 define('DB_CHARSET', 'utf8mb4');
 
 /**
  * Get PDO connection instance
  * Auto-creates database and table if they don't exist
  * 
- * @return PDO
+ * @return PDO|null
  */
 function getDBConnection()
 {
@@ -61,8 +67,7 @@ function getDBConnection()
 
     }
     catch (PDOException $e) {
-        // Return null and let the caller handle the error
-        error_log('Database connection error: ' . $e->getMessage());
+        error_log('DB Connection Error: ' . $e->getMessage());
         return null;
     }
 }
